@@ -274,13 +274,12 @@ class TabixIndex:
             for ioff in intv_index:
                 outfile.write(struct.pack("<Q", ioff))
 
-    @classmethod
-    def get_contigs(cls):
+    def get_contigs(self):
         """
         Return a list of contigs present in the Tabix index.
         """
-        assert cls.indexes is not None
-        return list(cls.indexes.keys())
+        assert self.indexes is not None
+        return list(self.indexes.keys())
     
     @classmethod
     def build_from(cls, rawfile) -> "TabixIndex":
