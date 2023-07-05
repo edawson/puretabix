@@ -185,9 +185,9 @@ class TabixIndex:
         if sequence_name in self.indexes:
             end_offsets = [item[1] for item in self.indexes[sequence_name][0].items()] ## Collect all values across the bins for this sequence.
             seq_end = max([max(item) for sublist in end_offsets for item in sublist]) ## Unroll the lists and find the max offset value, representing the end.
-            seq_start = min([min(item) for sublist in end_offsets for item in sublist])
+            # seq_start = min([min(item) for sublist in end_offsets for item in sublist])
         
-        return seq_start, seq_end
+        return seq_end
 
     def lookup_virtual(
         self, sequence_name: str, start: int, end: int
@@ -195,13 +195,17 @@ class TabixIndex:
         virtual_start = None
         virtual_end = None
 
-        if start is None and end is None:
-            return self._lookup_sequence_min_max(sequence_name)
-
+        if start is None:
+            start = 0
         linear_start = self._lookup_linear(sequence_name, start)
         # if this is not in the linear index, cant return anything
         if not linear_start:
             return None, None
+
+        if end is None:
+            r_end = self._lookup_sequence_min_max(sequence_name)
+        
+            return linear_start, r_end
 
         for chunk_start, chunk_end in self._lookup_bin_chunks(
             sequence_name, start, end
@@ -450,7 +454,6 @@ class TabixIndexedFile:
         block = block_start
         while block <= block_end:
             _, _, decompressed, _ = self.bgzipped.get_block()
-            # print(decompressed)
             # empty block at end of file
             if not decompressed:
                 break
